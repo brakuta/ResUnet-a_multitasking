@@ -114,9 +114,9 @@ def add_tensorboard_scalars(train_writer, val_writer, epoch,
 
 
 def train_model(args, net, x_train_paths, y_train_paths, x_val_paths,
-                              y_val_paths, batch_size, epochs,
-                              x_shape_batch, y_shape_batch, loss, optimizer,
-                              patience=10, delta=0.001):
+                y_val_paths, batch_size, epochs, loss, optimizer
+                x_shape_batch, y_shape_batch,
+                patience=10, delta=0.001):
     # patches_train = x_train_paths
     print('Start training...')
     print('='*60)
@@ -568,7 +568,7 @@ if __name__ == '__main__':
         start_time = time.time()
 
         train_model(args, model, patches_tr, y_paths, patches_val, val_paths,
-                    args.batch_size, epochs, adam, loss
+                    args.batch_size, epochs, adam, loss,
                     x_shape_batch=x_shape_batch, y_shape_batch=y_shape_batch)
 
         end_time = time.time() - start_time
