@@ -141,6 +141,7 @@ def Tanimoto_loss(label,pred):
     # print(loss.shape)
     return loss
 
+
 def Tanimoto_dual_loss():
     '''
         Implementation of Tanimoto dual loss in tensorflow 2.x
@@ -148,11 +149,11 @@ def Tanimoto_dual_loss():
             Note: to use it in deep learning training use: return 1. - 0.5*(loss1+loss2)
             OBS: Do use note's advice. Otherwise tanimoto doesn't work
     '''
-    def loss(label,pred):
-        loss1=Tanimoto_loss(pred,label)
-        pred=tf.subtract(1.0,pred)
-        label=tf.subtract(1.0,label)
-        loss2=Tanimoto_loss(label,pred)
-        loss=(loss1+loss2)*0.5
+    def loss(label, pred):
+        loss1 = Tanimoto_loss(pred, label)
+        pred = tf.subtract(1.0, pred)
+        label = tf.subtract(1.0, label)
+        loss2 = Tanimoto_loss(label, pred)
+        loss = (loss1 + loss2) * 0.5
         return 1.0 - loss
     return loss
