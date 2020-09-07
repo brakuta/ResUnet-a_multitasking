@@ -114,7 +114,7 @@ def add_tensorboard_scalars(train_writer, val_writer, epoch,
 
 
 def train_model(args, net, x_train_paths, y_train_paths, x_val_paths,
-                y_val_paths, batch_size, epochs, loss, optimizer
+                y_val_paths, batch_size, epochs, loss, optimizer,
                 x_shape_batch, y_shape_batch,
                 patience=10, delta=0.001):
     # patches_train = x_train_paths
