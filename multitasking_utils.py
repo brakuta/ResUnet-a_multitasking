@@ -91,7 +91,7 @@ def get_distance_label(label):
 #     return 1.0-loss
 
 
-def Tanimoto_loss(label,pred):
+def Tanimoto_loss(label, pred):
     """
     Implementation of Tanimoto loss in tensorflow 2.x
     -------------------------------------------------------------------------
