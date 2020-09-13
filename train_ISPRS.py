@@ -204,27 +204,27 @@ def train_model(args, net, x_train_paths, y_train_paths, x_val_paths,
                         y_train_h_b_color[b] = np.load(y_train_paths_b_color[b])
 
             if not args.multitasking:
-                # loss_tr = loss_tr + net.train_on_batch(x_train_b, y_train_h_b_seg)
-                with tf.GradientTape() as tape:
-                    # Logits for this minibatch
-                    logits = net(x_train_b, training=True)
-                    print('='*30 + ' [CHECKING LOSS] ' + '='*30)
-                    print(f'Train logits: {logits.shape}')
-                    print(type(logits))
-
-                    # Compute the loss value for this minibatch.
-                    loss_value = loss(y_train_h_b_seg, logits)
-                    print(type(loss_value))
-                    print(loss_value.shape)
-
-                # Use the gradient tape to automatically retrieve
-                # the gradients of the trainable
-                # variables with respect to the loss.
-                grads = tape.gradient(loss_tr, net.trainable_weights)
-
-                # Run one step of gradient descent by updating
-                # the value of the variables to minimize the loss.
-                optimizer.apply_gradients(zip(grads, model.trainable_weights))
+                loss_tr = loss_tr + net.train_on_batch(x_train_b, y_train_h_b_seg)
+                # with tf.GradientTape() as tape:
+                #     # Logits for this minibatch
+                #     logits = net(x_train_b, training=True)
+                #     print('='*30 + ' [CHECKING LOSS] ' + '='*30)
+                #     print(f'Train logits: {logits.shape}')
+                #     print(type(logits))
+                #
+                #     # Compute the loss value for this minibatch.
+                #     loss_value = loss(y_train_h_b_seg, logits)
+                #     print(type(loss_value))
+                #     print(loss_value.shape)
+                #
+                # # Use the gradient tape to automatically retrieve
+                # # the gradients of the trainable
+                # # variables with respect to the loss.
+                # grads = tape.gradient(loss_tr, net.trainable_weights)
+                #
+                # # Run one step of gradient descent by updating
+                # # the value of the variables to minimize the loss.
+                # optimizer.apply_gradients(zip(grads, model.trainable_weights))
 
             else:
                 y_train_b = {"seg": y_train_h_b_seg}
@@ -237,12 +237,12 @@ def train_model(args, net, x_train_paths, y_train_paths, x_val_paths,
 
                 loss_tr = loss_tr + net.train_on_batch(x=x_train_b, y=y_train_b)
 
-            # print('='*30 + ' [CHECKING LOSS] ' + '='*30)
-            # print(net.metrics_names)
-            # print(type(loss_tr))
-            # print(len(loss_tr))
-            # print(loss_tr)
-            # print(loss_tr.shape)
+            print('='*30 + ' [CHECKING LOSS] ' + '='*30)
+            print(net.metrics_names)
+            print(type(loss_tr))
+            print(len(loss_tr))
+            print(loss_tr)
+            print(loss_tr.shape)
 
         # Training loss; Divide by the number of batches
         print(loss_tr)
