@@ -199,7 +199,12 @@ def normalize_rgb(img, norm_type=1):
     # Normalize image between [-1, 1]
     elif norm_type == 2:
         img /= 127.5 - 1.
-
+    elif norm_type == 3:
+        image_reshaped = img.reshape((img.shape[0]*img.shape[1]), img.shape[2])
+        scaler = StandardScaler()
+        scaler = scaler.fit(image_reshaped)
+        image_normalized = scaler.fit_transform(image_reshaped)
+        img = image_normalized.reshape(img.shape[0], img.shape[1], img.shape[2])
 
     return img
 

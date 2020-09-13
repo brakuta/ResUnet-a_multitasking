@@ -234,7 +234,6 @@ def train_model(args, net, x_train_paths, y_train_paths, x_val_paths,
                 optimizer.apply_gradients(zip(grads, model.trainable_weights))
 
                 # Because loss is calculated as mean of batches
-                print(loss_value.result())
                 running_loss_tr += float(loss_value) * batch_size
                 print(running_loss_tr)
 
