@@ -144,8 +144,8 @@ def train_model(args, net, x_train_paths, y_train_paths, x_val_paths,
 
 
     # DEBUG
-    loss_val_debg = 0
-    loss_tr_debg = 0
+    running_loss_val = 0
+    running_loss_tr = 0
     if args.multitasking:
         # Bounds
         if args.bound:
@@ -233,6 +233,11 @@ def train_model(args, net, x_train_paths, y_train_paths, x_val_paths,
                 # the value of the variables to minimize the loss.
                 optimizer.apply_gradients(zip(grads, model.trainable_weights))
 
+                # Because loss is calculated as mean of batches
+                print(loss_value.result())
+                running_loss_tr += float(loss_value) * batch_size
+                print(running_loss_tr)
+
             else:
                 y_train_b = {"seg": y_train_h_b_seg}
                 if args.bound:
@@ -253,7 +258,7 @@ def train_model(args, net, x_train_paths, y_train_paths, x_val_paths,
 
         # Training loss; Divide by the number of batches
         # print(loss_tr_debg)
-        loss_tr_debg = loss_tr_debg/n_batchs_tr
+        running_loss_tr /= len(x_train_paths)
         loss_tr = loss_tr/n_batchs_tr
 
         # Computing the number of batchs on validation
@@ -286,7 +291,8 @@ def train_model(args, net, x_train_paths, y_train_paths, x_val_paths,
                 val_logits = net(x_val_b, training=False)
                 print(f'Val logits: {val_logits.shape}')
                 print(type(val_logits))
-                loss_val_debg += loss(y_val_h_b_seg, val_logits)
+                loss_value = loss(y_val_h_b_seg, val_logits)
+                running_loss_val += float(loss_value) * batch_size
             else:
                 # Dict template: y_val_b = {"segmentation": y_val_h_b_seg,
                 # "boundary": y_val_h_b_bound, "distance":  y_val_h_b_dist,
@@ -301,17 +307,18 @@ def train_model(args, net, x_train_paths, y_train_paths, x_val_paths,
 
                 loss_val = loss_val + net.test_on_batch(x=x_val_b, y=y_val_b)
 
-        loss_val_debg = loss_val_debg/n_batchs_val
+        running_loss_val /= len(x_val_paths)
         loss_val = loss_val/n_batchs_val
+
         if not args.multitasking:
             train_loss = loss_tr[0, 0]
             train_acc = loss_tr[0, 1]
             val_loss = loss_val[0, 0]
             val_acc = loss_val[0, 1]
-            total_train_loss.append(train_loss)
-            total_train_acc.append(train_acc)
-            total_val_loss.append(val_loss)
-            total_val_acc.append(val_acc)
+
+            # DEBUG
+            loss_tr = running_loss_tr
+            loss_val = running_loss_val
             print(f"Epoch: {epoch} \t \
                     Training loss: {train_loss :.5f} \t \
                     Train acc.: {100*train_acc:.5f}% \t \
@@ -400,8 +407,7 @@ def train_model(args, net, x_train_paths, y_train_paths, x_val_paths,
                 print("Early Stopping! \t Training Stopped")
                 print("Saving model...")
                 net.save('weights/model_early_stopping.h5')
-                return total_train_loss, total_train_acc,
-                total_val_loss, total_val_acc
+                return 0
         else:
             cont = 0
             # best_score = score
