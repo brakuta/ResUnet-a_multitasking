@@ -222,6 +222,7 @@ def train_model(args, net, x_train_paths, y_train_paths, x_val_paths,
                     loss_value = loss(y_train_h_b_seg, logits)
                     print(type(loss_value))
                     print(loss_value.shape)
+                    print(loss_value)
 
                 # Use the gradient tape to automatically retrieve
                 # the gradients of the trainable
@@ -251,7 +252,7 @@ def train_model(args, net, x_train_paths, y_train_paths, x_val_paths,
             # print(loss_tr.shape)
 
         # Training loss; Divide by the number of batches
-        print(loss_tr_debg)
+        # print(loss_tr_debg)
         loss_tr_debg = loss_tr_debg/n_batchs_tr
         loss_tr = loss_tr/n_batchs_tr
 
