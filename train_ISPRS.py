@@ -208,6 +208,7 @@ def train_model(args, net, x_train_paths, y_train_paths, x_val_paths,
                 with tf.GradientTape() as tape:
                     # Logits for this minibatch
                     logits = net(x_train_b, training=True)
+                    print('='*30 + ' [CHECKING LOSS] ' + '='*30)
                     print(f'Train logits: {logits.shape}')
                     print(type(logits))
 
@@ -420,15 +421,19 @@ if __name__ == '__main__':
     parser.add_argument("--gpu_parallel",
                         help="choose 1 to train one multiple gpu",
                         type=int, default=0)
-    parser.add_argument("--log_path", help="Path where to save logs",
+    parser.add_argument("--log_path", help="path where to save logs",
                         type=str, default='./results/log_run1')
-    parser.add_argument("--dataset_path", help="Path where to load dataset",
+    parser.add_argument("--dataset_path", help="path where to load dataset",
                         type=str, default='./DATASETS/patches_ps=256_stride=32')
-    parser.add_argument("--batch_size", help="Batch size on training",
+    parser.add_argument("--batch_size", help="batch size on training",
                         type=int, default=4)
     parser.add_argument("-lr", "--learning_rate",
                         help="Learning rate on training",
                         type=float, default=1e-3)
+    parser.add_argument("--loss", help="choose which loss you want to use",
+                        type=str, default='weighted_cross_entropy',
+                        choices=['weighted_cros_sentropy', 'cross_entropy',
+                                 'tanimoto'])
     args = parser.parse_args()
 
     if args.gpu_parallel:
@@ -496,19 +501,21 @@ if __name__ == '__main__':
     adam = Adam(lr=args.learning_rate, beta_1=0.9)
     sgd = SGD(lr=args.learning_rate, momentum=0.8)
 
-    weights = [4.34558461, 2.97682037, 3.92124661, 5.67350328, 374.0300152]
-    print('='*60)
-    print(weights)
-    loss = weighted_categorical_crossentropy(weights)
-    if args.multitasking:
-        # weighted_cross_entropy = weighted_categorical_crossentropy(weights)
-        # cross_entropy = "categorical_crossentropy"
-        tanimoto = Tanimoto_dual_loss()
+    print(f'Using {args.loss} loss!')
+    if args.loss == 'cross_entropy':
+        loss = "categorical_crossentropy"
+    elif args.loss == 'weighted_cross_entropy':
+        weights = [4.34558461, 2.97682037, 3.92124661, 5.67350328, 374.0300152]
+        print('='*60)
+        print(weights)
+        loss = weighted_categorical_crossentropy(weights)
+    elif args.loss == 'tanimoto':
+        loss = Tanimoto_dual_loss()
 
     if args.resunet_a:
-
         if args.multitasking:
             print('Multitasking enabled!')
+            tanimoto = Tanimoto_dual_loss()
             resuneta = Resunet_a((rows, cols, channels), number_class, args)
             model = resuneta.model
             model.summary()
@@ -546,7 +553,7 @@ if __name__ == '__main__':
         model = unet((rows, cols, channels), number_class)
         model.summary()
 
-        model.compile(optimizer=adam, loss=loss, metrics=['accuracy'])
+        # model.compile(optimizer=adam, loss=loss, metrics=['accuracy'])
 
     filepath = './models/'
 
