@@ -133,19 +133,11 @@ def train_model(args, net, x_train_paths, y_train_paths, x_val_paths,
     # Initialize as maximum possible number
     min_loss = float('inf')
     cont = 0
-    total_train_loss = []
-    total_train_acc = []
-    total_val_loss = []
-    total_val_acc = []
     x_train_b = np.zeros(x_shape_batch, dtype=np.float32)
     y_train_h_b_seg = np.zeros(y_shape_batch, dtype=np.float32)
     x_val_b = np.zeros(x_shape_batch, dtype=np.float32)
     y_val_h_b_seg = np.zeros(y_shape_batch, dtype=np.float32)
 
-
-    # DEBUG
-    running_loss_val = 0
-    running_loss_tr = 0
     if args.multitasking:
         # Bounds
         if args.bound:
@@ -168,6 +160,9 @@ def train_model(args, net, x_train_paths, y_train_paths, x_val_paths,
     print(net.metrics_names)
     for epoch in range(epochs):
         if not args.multitasking:
+            # DEBUG
+            running_loss_val = 0
+            running_loss_tr = 0
             loss_tr = np.zeros((1, 2), dtype=np.float32)
             loss_val = np.zeros((1, 2), dtype=np.float32)
         else:
@@ -259,6 +254,8 @@ def train_model(args, net, x_train_paths, y_train_paths, x_val_paths,
         # Training loss; Divide by the number of batches
         # print(loss_tr_debg)
         running_loss_tr /= len(x_train_paths)
+        print('[DEBUG LOSS]')
+        print(running_loss_tr)
         loss_tr = loss_tr/n_batchs_tr
 
         # Computing the number of batchs on validation
@@ -320,10 +317,10 @@ def train_model(args, net, x_train_paths, y_train_paths, x_val_paths,
             loss_tr = running_loss_tr
             loss_val = running_loss_val
             print(f"Epoch: {epoch}" +
-                    f"Training loss: {train_loss :.5f}" +
-                    f"Train acc.: {100*train_acc:.5f}%" +
-                    f"Validation loss: {val_loss :.5f}" +
-                    f"Validation acc.: {100*val_acc:.5f}%")
+                  f" Training loss: {train_loss :.5f}" +
+                  f" Train acc.: {100*train_acc:.5f}%" +
+                  f" Validation loss: {val_loss :.5f}" +
+                  f" Validation acc.: {100*val_acc:.5f}%")
 
             add_tensorboard_scalars(train_summary_writer, val_summary_writer,
                                     epoch, 'Total', train_loss, val_loss,
