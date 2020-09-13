@@ -553,7 +553,7 @@ if __name__ == '__main__':
         model = unet((rows, cols, channels), number_class)
         model.summary()
 
-        # model.compile(optimizer=adam, loss=loss, metrics=['accuracy'])
+        model.compile(optimizer=adam, loss=loss, metrics=['accuracy'])
 
     filepath = './models/'
 
