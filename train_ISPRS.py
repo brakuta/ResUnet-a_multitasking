@@ -432,7 +432,7 @@ if __name__ == '__main__':
                         type=float, default=1e-3)
     parser.add_argument("--loss", help="choose which loss you want to use",
                         type=str, default='weighted_cross_entropy',
-                        choices=['weighted_cros_sentropy', 'cross_entropy',
+                        choices=['weighted_cross_entropy', 'cross_entropy',
                                  'tanimoto'])
     args = parser.parse_args()
 
