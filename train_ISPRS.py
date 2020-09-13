@@ -253,7 +253,7 @@ def train_model(args, net, x_train_paths, y_train_paths, x_val_paths,
 
         # Training loss; Divide by the number of batches
         # print(loss_tr_debg)
-        running_loss_tr /= len(x_train_paths)
+        loss_tr_float = running_loss_tr/len(x_train_paths)
         print('[DEBUG LOSS]')
         print(running_loss_tr)
         loss_tr = loss_tr/n_batchs_tr
@@ -304,18 +304,18 @@ def train_model(args, net, x_train_paths, y_train_paths, x_val_paths,
 
                 loss_val = loss_val + net.test_on_batch(x=x_val_b, y=y_val_b)
 
-        running_loss_val /= len(x_val_paths)
+        loss_val_float = running_loss_val/len(x_val_paths)
         loss_val = loss_val/n_batchs_val
 
         if not args.multitasking:
-            train_loss = loss_tr[0, 0]
+            # train_loss = loss_tr[0, 0]
             train_acc = loss_tr[0, 1]
-            val_loss = loss_val[0, 0]
+            # val_loss = loss_val[0, 0]
             val_acc = loss_val[0, 1]
 
             # DEBUG
-            loss_tr = running_loss_tr
-            loss_val = running_loss_val
+            train_loss = loss_tr_float
+            val_loss = loss_val_float
             print(f"Epoch: {epoch}" +
                   f" Training loss: {train_loss :.5f}" +
                   f" Train acc.: {100*train_acc:.5f}%" +
