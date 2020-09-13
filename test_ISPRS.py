@@ -19,6 +19,7 @@ import ast
 import cv2
 from matplotlib import cm
 from matplotlib.colors import hsv_to_rgb
+from sklearn.preprocessing import StandardScaler
 
 # def Test(model, patches, args, num_classes=5):
 #     num_patches, weight, height, _ = patches.shape
@@ -198,6 +199,7 @@ def normalize_rgb(img, norm_type=1):
     # Normalize image between [-1, 1]
     elif norm_type == 2:
         img /= 127.5 - 1.
+
 
     return img
 
