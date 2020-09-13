@@ -214,16 +214,16 @@ def train_model(args, net, x_train_paths, y_train_paths, x_val_paths,
                 with tf.GradientTape() as tape:
                     # Logits for this minibatch
                     logits = net(x_train_b, training=True)
-                    print('='*30 + ' [CHECKING LOSS] ' + '='*30)
-                    print(f'Train logits: {logits.shape}')
-                    print(type(logits))
+                    # print('='*30 + ' [CHECKING LOSS] ' + '='*30)
+                    # print(f'Train logits: {logits.shape}')
+                    # print(type(logits))
 
                     # Compute the loss value for this minibatch.
                     loss_value = loss(y_train_h_b_seg, logits)
-                    print(type(loss_value))
-                    print(loss_value.shape)
-                    print(loss_value)
-                    print(float(loss_value))
+                    # print(type(loss_value))
+                    # print(loss_value.shape)
+                    # print(loss_value)
+                    # print(float(loss_value))
 
                 # Use the gradient tape to automatically retrieve
                 # the gradients of the trainable
@@ -236,7 +236,7 @@ def train_model(args, net, x_train_paths, y_train_paths, x_val_paths,
 
                 # Because loss is calculated as mean of batches
                 running_loss_tr += float(loss_value) * batch_size
-                print(running_loss_tr)
+                #print(running_loss_tr)
 
             else:
                 y_train_b = {"seg": y_train_h_b_seg}
@@ -289,8 +289,8 @@ def train_model(args, net, x_train_paths, y_train_paths, x_val_paths,
             if not args.multitasking:
                 # loss_val = loss_val + net.test_on_batch(x_val_b, y_val_h_b_seg)
                 val_logits = net(x_val_b, training=False)
-                print(f'Val logits: {val_logits.shape}')
-                print(type(val_logits))
+                # print(f'Val logits: {val_logits.shape}')
+                # print(type(val_logits))
                 loss_value = loss(y_val_h_b_seg, val_logits)
                 running_loss_val += float(loss_value) * batch_size
             else:
@@ -319,11 +319,11 @@ def train_model(args, net, x_train_paths, y_train_paths, x_val_paths,
             # DEBUG
             loss_tr = running_loss_tr
             loss_val = running_loss_val
-            print(f"Epoch: {epoch} \t \
-                    Training loss: {train_loss :.5f} \t \
-                    Train acc.: {100*train_acc:.5f}% \t \
-                    Validation loss: {val_loss :.5f} \t \
-                    Validation acc.: {100*val_acc:.5f}%")
+            print(f"Epoch: {epoch}" +
+                    f"Training loss: {train_loss :.5f}" +
+                    f"Train acc.: {100*train_acc:.5f}%" +
+                    f"Validation loss: {val_loss :.5f}" +
+                    f"Validation acc.: {100*val_acc:.5f}%")
 
             add_tensorboard_scalars(train_summary_writer, val_summary_writer,
                                     epoch, 'Total', train_loss, val_loss,
