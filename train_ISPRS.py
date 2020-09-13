@@ -23,7 +23,7 @@ import ast
 from prettytable import PrettyTable
 import tensorflow as tf
 from tqdm import tqdm
-from tf.keras.losses import CategoricalCrossentropy
+from tensorflow.keras.losses import CategoricalCrossentropy
 
 
 def extract_patches_test(binary_img_test_ref, patch_size):
