@@ -141,6 +141,11 @@ def train_model(args, net, x_train_paths, y_train_paths, x_val_paths,
     y_train_h_b_seg = np.zeros(y_shape_batch, dtype=np.float32)
     x_val_b = np.zeros(x_shape_batch, dtype=np.float32)
     y_val_h_b_seg = np.zeros(y_shape_batch, dtype=np.float32)
+
+
+    # DEBUG
+    loss_val_debg = 0
+    loss_tr_debg = 0
     if args.multitasking:
         # Bounds
         if args.bound:
@@ -214,14 +219,14 @@ def train_model(args, net, x_train_paths, y_train_paths, x_val_paths,
                     print(type(logits))
 
                     # Compute the loss value for this minibatch.
-                    loss_value = loss(y_train_h_b_seg, logits)
-                    print(type(loss_value))
-                    print(loss_value.shape)
+                    loss_tr_debg += loss(y_train_h_b_seg, logits)
+                    print(type(loss_tr_debg))
+                    print(loss_tr_debg.shape)
 
                 # Use the gradient tape to automatically retrieve
                 # the gradients of the trainable
                 # variables with respect to the loss.
-                grads = tape.gradient(loss_tr, net.trainable_weights)
+                grads = tape.gradient(loss_tr_debg, net.trainable_weights)
 
                 # Run one step of gradient descent by updating
                 # the value of the variables to minimize the loss.
@@ -246,7 +251,8 @@ def train_model(args, net, x_train_paths, y_train_paths, x_val_paths,
             # print(loss_tr.shape)
 
         # Training loss; Divide by the number of batches
-        print(loss_tr)
+        print(loss_tr_debg)
+        loss_tr_debg = loss_tr_debg/n_batchs_tr
         loss_tr = loss_tr/n_batchs_tr
 
         # Computing the number of batchs on validation
@@ -279,7 +285,7 @@ def train_model(args, net, x_train_paths, y_train_paths, x_val_paths,
                 val_logits = net(x_val_b, training=False)
                 print(f'Val logits: {val_logits.shape}')
                 print(type(val_logits))
-                loss_val += loss(y_val_h_b_seg, val_logits)
+                loss_val_debg += loss(y_val_h_b_seg, val_logits)
             else:
                 # Dict template: y_val_b = {"segmentation": y_val_h_b_seg,
                 # "boundary": y_val_h_b_bound, "distance":  y_val_h_b_dist,
@@ -294,6 +300,7 @@ def train_model(args, net, x_train_paths, y_train_paths, x_val_paths,
 
                 loss_val = loss_val + net.test_on_batch(x=x_val_b, y=y_val_b)
 
+        loss_val_debg = loss_val_debg/n_batchs_val
         loss_val = loss_val/n_batchs_val
         if not args.multitasking:
             train_loss = loss_tr[0, 0]
