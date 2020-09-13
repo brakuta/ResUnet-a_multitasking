@@ -223,6 +223,7 @@ def train_model(args, net, x_train_paths, y_train_paths, x_val_paths,
                     print(type(loss_value))
                     print(loss_value.shape)
                     print(loss_value)
+                    print(float(loss_value))
 
                 # Use the gradient tape to automatically retrieve
                 # the gradients of the trainable
