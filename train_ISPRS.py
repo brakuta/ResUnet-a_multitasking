@@ -219,14 +219,14 @@ def train_model(args, net, x_train_paths, y_train_paths, x_val_paths,
                     print(type(logits))
 
                     # Compute the loss value for this minibatch.
-                    loss_tr_debg += loss(y_train_h_b_seg, logits)
-                    print(type(loss_tr_debg))
-                    print(loss_tr_debg.shape)
+                    loss_value = loss(y_train_h_b_seg, logits)
+                    print(type(loss_value))
+                    print(loss_value.shape)
 
                 # Use the gradient tape to automatically retrieve
                 # the gradients of the trainable
                 # variables with respect to the loss.
-                grads = tape.gradient(loss_tr_debg, net.trainable_weights)
+                grads = tape.gradient(loss_value, net.trainable_weights)
 
                 # Run one step of gradient descent by updating
                 # the value of the variables to minimize the loss.
