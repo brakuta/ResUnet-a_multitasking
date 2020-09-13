@@ -365,7 +365,6 @@ if args.multitasking:
                     # Distance Transform
                     axes[n_class, col].imshow(dist_ref_h[:, :, n_class],
                                               cmap=cm.Greys_r)
-        plt.savefig(os.path.join(args.output_path, f'pred{i}_classes.jpg'))
         # Color
         fig2, (ax1, ax2, ax3) = plt.subplots(nrows=1, ncols=3, figsize=(10, 5))
         ax1.set_title('Original')
@@ -383,7 +382,6 @@ if args.multitasking:
         # diff = 2*(diff-diff.min())/(diff.max()-diff.min()) - np.ones_like(diff)
         ax3.imshow(img - rgb_patch)
         # ax3.imshow(diff)
-        plt.savefig(os.path.join(args.output_path, f'pred{i}_color.jpg'))
 
         for i in range(args.num_classes):
             axes[i, 0].set_ylabel(f'Class {i}')
@@ -395,6 +393,8 @@ if args.multitasking:
         axes[0, 4].set_title('Bound Pred')
         axes[0, 5].set_title('Dist Ref')
         axes[0, 6].set_title('Dist Pred')
+        plt.savefig(os.path.join(args.output_path, f'pred{i}_classes.jpg'))
+        plt.savefig(os.path.join(args.output_path, f'pred{i}_color.jpg'))
         plt.show()
         plt.close()
 

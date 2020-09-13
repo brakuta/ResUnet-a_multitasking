@@ -191,6 +191,7 @@ def train_model(args, net, x_train_paths, y_train_paths, x_val_paths,
                 y_train_paths_b_dist = y_train_paths_rand_dist[batch * batch_size:(batch + 1) * batch_size]
 
                 y_train_paths_b_color = y_train_paths_rand_color[batch * batch_size:(batch + 1) * batch_size]
+            # Load images in batch
             for b in range(batch_size):
                 x_train_b[b] = np.load(x_train_paths_b[b])
                 y_train_h_b_seg[b] = np.load(y_train_paths_b_seg[b])
@@ -218,7 +219,7 @@ def train_model(args, net, x_train_paths, y_train_paths, x_val_paths,
                 # Use the gradient tape to automatically retrieve
                 # the gradients of the trainable
                 # variables with respect to the loss.
-                grads = tape.gradient(loss_value, net.trainable_weights)
+                grads = tape.gradient(loss_tr, net.trainable_weights)
 
                 # Run one step of gradient descent by updating
                 # the value of the variables to minimize the loss.
@@ -259,6 +260,7 @@ def train_model(args, net, x_train_paths, y_train_paths, x_val_paths,
                 y_val_paths_b_dist = y_val_paths[2][batch * batch_size:(batch + 1) * batch_size]
 
                 y_val_paths_b_color = y_val_paths[3][batch * batch_size:(batch + 1) * batch_size]
+            # Load images in batch
             for b in range(batch_size):
                 x_val_b[b] = np.load(x_val_paths_b[b])
                 y_val_h_b_seg[b] = np.load(y_val_paths_b_seg[b])
@@ -275,6 +277,7 @@ def train_model(args, net, x_train_paths, y_train_paths, x_val_paths,
                 val_logits = net(x_val_b, training=False)
                 print(f'Val logits: {val_logits.shape}')
                 print(type(val_logits))
+                loss_val += loss(y_val_h_b_seg, logits)
             else:
                 # Dict template: y_val_b = {"segmentation": y_val_h_b_seg,
                 # "boundary": y_val_h_b_bound, "distance":  y_val_h_b_dist,
