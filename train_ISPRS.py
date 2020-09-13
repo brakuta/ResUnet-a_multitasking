@@ -23,6 +23,7 @@ import ast
 from prettytable import PrettyTable
 import tensorflow as tf
 from tqdm import tqdm
+from tf.keras.losses import CategoricalCrossentropy
 
 
 def extract_patches_test(binary_img_test_ref, patch_size):
@@ -503,7 +504,8 @@ if __name__ == '__main__':
 
     print(f'Using {args.loss} loss!')
     if args.loss == 'cross_entropy':
-        loss = "categorical_crossentropy"
+        loss = CategoricalCrossentropy()
+        # loss = "categorical_crossentropy"
     elif args.loss == 'weighted_cross_entropy':
         weights = [4.34558461, 2.97682037, 3.92124661, 5.67350328, 374.0300152]
         print('='*60)
