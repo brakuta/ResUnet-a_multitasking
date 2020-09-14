@@ -100,7 +100,7 @@ def compute_metrics(true_labels, predicted_labels):
 def compute_accuracy(labels, preds):
     true_labels = np.reshape(labels, (labels.shape[0] * labels.shape[1] * labels.shape[2]))
     predicted_labels = np.reshape(preds, (preds.shape[0] * preds.shape[1] * preds.shape[2]))
-    accuracy = 100 * accuracy_score(true_labels, predicted_labels)
+    accuracy = accuracy_score(true_labels, predicted_labels)
     return accuracy
 
 
@@ -266,7 +266,7 @@ def train_model(args, net, x_train_paths, y_train_paths, x_val_paths,
             if not args.multitasking:
                 # loss_tr = loss_tr + net.train_on_batch(x_train_b, y_train_h_b_seg)
                 loss_value, acc_tr = train_on_batch(net, optimizer, loss, x_train_b, y_train_h_b_seg)
-                running_acc_tr += acc_tr
+                running_acc_tr += acc_tr * batch_size
                 # Because loss is calculated as mean of batches
                 # running_loss_tr += float(loss_value) * batch_size
                 running_loss_tr.append(loss_value.numpy())
@@ -325,7 +325,7 @@ def train_model(args, net, x_train_paths, y_train_paths, x_val_paths,
             if not args.multitasking:
                 # loss_val = loss_val + net.test_on_batch(x_val_b, y_val_h_b_seg)
                 loss_value, acc_val = test_on_batch(net, optimizer, loss, x_val_b, y_val_h_b_seg)
-                running_acc_val += acc_val
+                running_acc_val += acc_val * batch_size
                 # running_loss_val += float(loss_value) * batch_size
                 running_loss_val.append(loss_value.numpy())
             else:
