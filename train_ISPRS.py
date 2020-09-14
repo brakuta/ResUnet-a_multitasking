@@ -136,19 +136,19 @@ def train_on_batch(net, optimizer, loss, x_train_b, y_train_h_b_seg):
     with tf.GradientTape() as tape:
         # Logits for this minibatch
         logits = net(x_train_b, training=True)
-        print('='*30 + ' [CHECKING LOSS] ' + '='*30)
+        # print('='*30 + ' [CHECKING LOSS] ' + '='*30)
         # print(f'Train logits: {logits.shape}')
         # print(type(logits))
-        print(logits.shape)
-        print(y_train_h_b_seg.shape)
+        # print(logits.shape)
+        # print(y_train_h_b_seg.shape)
         with tf.device("CPU:0"):
             logits_npy = logits.numpy().copy()
             preds = np.argmax(logits_npy, axis=-1)
             label_preds = np.argmax(y_train_h_b_seg, axis=-1)
-        print(preds.shape)
-        print(label_preds.shape)
+        # print(preds.shape)
+        # print(label_preds.shape)
         acc_batch = compute_accuracy(label_preds, preds)
-        print(acc_batch)
+        # print(acc_batch)
 
         # Compute the loss value for this minibatch.
         loss_value = loss(y_train_h_b_seg, logits)
