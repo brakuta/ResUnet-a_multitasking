@@ -124,8 +124,10 @@ def add_tensorboard_scalars(train_writer, val_writer, epoch,
 def test_on_batch(net, optimizer, loss, x_val_b, y_val_h_b_seg):
     val_logits = net(x_val_b, training=False)
     with tf.device("CPU:0"):
-        res = (val_logits.numpy() == y_val_h_b_seg)
-    acc_batch = np.sum(res)
+        logits_npy = val_logits.numpy().copy()
+        preds = np.argmax(logits_npy, axis=-1)
+        label_preds = np.argmax(y_val_h_b_seg, axis=-1)
+    acc_batch = compute_accuracy(label_preds, preds)
     # print(f'Val logits: {val_logits.shape}')
     # print(type(val_logits))
     loss_value = loss(y_val_h_b_seg, val_logits)
