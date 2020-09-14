@@ -136,9 +136,10 @@ def Tanimoto_loss(label, pred):
     # print('denominator sum labels')
     # print(denomintor_sum_labels.shape)
     # Add smooth to avoid numerical instability
-    loss=tf.divide(sum_product_labels + smooth,denomintor_sum_labels + smooth)
+    loss=tf.divide(sum_product_labels + smooth, denomintor_sum_labels + smooth)
     # print('loss')
     # print(loss.shape)
+    loss = tf.reduce_mean(loss, axis=0)
     return loss
 
 

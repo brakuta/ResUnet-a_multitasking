@@ -114,6 +114,40 @@ def add_tensorboard_scalars(train_writer, val_writer, epoch,
                               step=epoch)
 
 
+def test_on_batch(net, optimizer, loss, x_val_b, y_val_h_b_seg):
+    val_logits = net(x_val_b, training=False)
+    # print(f'Val logits: {val_logits.shape}')
+    # print(type(val_logits))
+    loss_value = loss(y_val_h_b_seg, val_logits)
+    return loss_value
+
+
+def train_on_batch(net, optimizer, loss, x_train_b, y_train_h_b_seg):
+    with tf.GradientTape() as tape:
+        # Logits for this minibatch
+        logits = net(x_train_b, training=True)
+        # print('='*30 + ' [CHECKING LOSS] ' + '='*30)
+        # print(f'Train logits: {logits.shape}')
+        # print(type(logits))
+
+        # Compute the loss value for this minibatch.
+        loss_value = loss(y_train_h_b_seg, logits)
+        # print(type(loss_value))
+        # print(loss_value.shape)
+        # print(loss_value)
+        # print(float(loss_value))
+
+    # Use the gradient tape to automatically retrieve
+    # the gradients of the trainable
+    # variables with respect to the loss.
+    grads = tape.gradient(loss_value, net.trainable_weights)
+
+    # Run one step of gradient descent by updating
+    # the value of the variables to minimize the loss.
+    optimizer.apply_gradients(zip(grads, model.trainable_weights))
+    return loss_value
+
+
 def train_model(args, net, x_train_paths, y_train_paths, x_val_paths,
                 y_val_paths, batch_size, epochs, optimizer, loss,
                 x_shape_batch, y_shape_batch,
@@ -207,29 +241,7 @@ def train_model(args, net, x_train_paths, y_train_paths, x_val_paths,
 
             if not args.multitasking:
                 # loss_tr = loss_tr + net.train_on_batch(x_train_b, y_train_h_b_seg)
-                with tf.GradientTape() as tape:
-                    # Logits for this minibatch
-                    logits = net(x_train_b, training=True)
-                    # print('='*30 + ' [CHECKING LOSS] ' + '='*30)
-                    # print(f'Train logits: {logits.shape}')
-                    # print(type(logits))
-
-                    # Compute the loss value for this minibatch.
-                    loss_value = loss(y_train_h_b_seg, logits)
-                    # print(type(loss_value))
-                    # print(loss_value.shape)
-                    # print(loss_value)
-                    # print(float(loss_value))
-
-                # Use the gradient tape to automatically retrieve
-                # the gradients of the trainable
-                # variables with respect to the loss.
-                grads = tape.gradient(loss_value, net.trainable_weights)
-
-                # Run one step of gradient descent by updating
-                # the value of the variables to minimize the loss.
-                optimizer.apply_gradients(zip(grads, model.trainable_weights))
-
+                loss_value = train_on_batch(net, optimizer, loss, x_train_b, y_train_h_b_seg)
                 # Because loss is calculated as mean of batches
                 # running_loss_tr += float(loss_value) * batch_size
                 running_loss_tr.append(loss_value.numpy())
@@ -286,10 +298,8 @@ def train_model(args, net, x_train_paths, y_train_paths, x_val_paths,
 
             if not args.multitasking:
                 # loss_val = loss_val + net.test_on_batch(x_val_b, y_val_h_b_seg)
-                val_logits = net(x_val_b, training=False)
-                # print(f'Val logits: {val_logits.shape}')
-                # print(type(val_logits))
-                loss_value = loss(y_val_h_b_seg, val_logits)
+                loss_val = test_on_batch(net, optimizer,
+                                         loss, x_val_b, y_val_h_b_seg)
                 # running_loss_val += float(loss_value) * batch_size
                 running_loss_val.append(loss_value.numpy())
             else:
