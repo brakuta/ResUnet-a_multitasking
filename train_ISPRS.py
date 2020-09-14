@@ -143,8 +143,8 @@ def train_on_batch(net, optimizer, loss, x_train_b, y_train_h_b_seg):
         print(y_train_h_b_seg.shape)
         with tf.device("CPU:0"):
             logits_npy = logits.numpy().copy()
-            preds = np.argmax(logits_npy)
-            label_preds = np.argmax(y_train_h_b_seg)
+            preds = np.argmax(logits_npy, axis=-1)
+            label_preds = np.argmax(y_train_h_b_seg, axis=-1)
         print(preds.shape)
         print(label_preds.shape)
         acc_batch = compute_accuracy(label_preds, preds)
