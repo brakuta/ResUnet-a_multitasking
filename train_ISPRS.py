@@ -98,8 +98,8 @@ def compute_metrics(true_labels, predicted_labels):
 
 
 def compute_accuracy(labels, preds):
-    true_labels = np.reshape(labels, (labels.shape[0] * labels.shape[1] * labels.shape[2] * labels.shape[3]))
-    predicted_labels = np.reshape(preds, (preds.shape[0] * preds.shape[1] * preds.shape[2] * preds.shape[3]))
+    true_labels = np.reshape(labels, (labels.shape[0] * labels.shape[1] * labels.shape[2]))
+    predicted_labels = np.reshape(preds, (preds.shape[0] * preds.shape[1] * preds.shape[2]))
     accuracy = 100 * accuracy_score(true_labels, predicted_labels)
     return accuracy
 
@@ -143,7 +143,9 @@ def train_on_batch(net, optimizer, loss, x_train_b, y_train_h_b_seg):
         print(y_train_h_b_seg.shape)
         with tf.device("CPU:0"):
             logits_npy = logits.numpy().copy()
-        acc_batch = compute_accuracy(y_train_h_b_seg, logits_npy)
+            preds = np.argmax(logits_npy)
+            label_preds = np.argmax(y_train_h_b_seg)
+        acc_batch = compute_accuracy(label_preds, preds)
         print(acc_batch)
 
         # Compute the loss value for this minibatch.
