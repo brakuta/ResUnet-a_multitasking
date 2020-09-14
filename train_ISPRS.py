@@ -298,8 +298,7 @@ def train_model(args, net, x_train_paths, y_train_paths, x_val_paths,
 
             if not args.multitasking:
                 # loss_val = loss_val + net.test_on_batch(x_val_b, y_val_h_b_seg)
-                loss_val = test_on_batch(net, optimizer,
-                                         loss, x_val_b, y_val_h_b_seg)
+                loss_value = test_on_batch(net, optimizer, loss, x_val_b, y_val_h_b_seg)
                 # running_loss_val += float(loss_value) * batch_size
                 running_loss_val.append(loss_value.numpy())
             else:
