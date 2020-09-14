@@ -116,7 +116,8 @@ def add_tensorboard_scalars(train_writer, val_writer, epoch,
 
 def test_on_batch(net, optimizer, loss, x_val_b, y_val_h_b_seg):
     val_logits = net(x_val_b, training=False)
-    acc_batch = tf.reduce_sum(val_logits == y_val_h_b_seg)
+    with tf.device('/CPU:0'):
+        acc_batch = tf.reduce_sum(val_logits.numpy() == y_val_h_b_seg)
     # print(f'Val logits: {val_logits.shape}')
     # print(type(val_logits))
     loss_value = loss(y_val_h_b_seg, val_logits)
@@ -130,7 +131,8 @@ def train_on_batch(net, optimizer, loss, x_train_b, y_train_h_b_seg):
         # print('='*30 + ' [CHECKING LOSS] ' + '='*30)
         # print(f'Train logits: {logits.shape}')
         # print(type(logits))
-        acc_batch = tf.reduce_sum(logits == y_train_h_b_seg)
+        with tf.device('/CPU:0'):
+            acc_batch = tf.reduce_sum(logits == y_train_h_b_seg)
 
         # Compute the loss value for this minibatch.
         loss_value = loss(y_train_h_b_seg, logits)
