@@ -133,8 +133,10 @@ def train_on_batch(net, optimizer, loss, x_train_b, y_train_h_b_seg):
         # print(f'Train logits: {logits.shape}')
         # print(type(logits))
         print(logits.shape)
+        print(y_train_h_b_seg.shape)
         with tf.device("CPU:0"):
             res = (logits.numpy() == y_train_h_b_seg)
+            print(res.shape)
         acc_batch = np.sum(res)
 
         # Compute the loss value for this minibatch.
