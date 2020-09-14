@@ -116,10 +116,11 @@ def add_tensorboard_scalars(train_writer, val_writer, epoch,
 
 def test_on_batch(net, optimizer, loss, x_val_b, y_val_h_b_seg):
     val_logits = net(x_val_b, training=False)
+    acc_batch = tf.reduce_sum(val_logits == y_val_h_b_seg)
     # print(f'Val logits: {val_logits.shape}')
     # print(type(val_logits))
     loss_value = loss(y_val_h_b_seg, val_logits)
-    return loss_value
+    return loss_value, acc_batch
 
 
 def train_on_batch(net, optimizer, loss, x_train_b, y_train_h_b_seg):
@@ -129,6 +130,7 @@ def train_on_batch(net, optimizer, loss, x_train_b, y_train_h_b_seg):
         # print('='*30 + ' [CHECKING LOSS] ' + '='*30)
         # print(f'Train logits: {logits.shape}')
         # print(type(logits))
+        acc_batch = tf.reduce_sum(logits == y_train_h_b_seg)
 
         # Compute the loss value for this minibatch.
         loss_value = loss(y_train_h_b_seg, logits)
@@ -145,7 +147,7 @@ def train_on_batch(net, optimizer, loss, x_train_b, y_train_h_b_seg):
     # Run one step of gradient descent by updating
     # the value of the variables to minimize the loss.
     optimizer.apply_gradients(zip(grads, model.trainable_weights))
-    return loss_value
+    return loss_value, acc_batch
 
 
 def train_model(args, net, x_train_paths, y_train_paths, x_val_paths,
@@ -196,6 +198,8 @@ def train_model(args, net, x_train_paths, y_train_paths, x_val_paths,
     for epoch in range(epochs):
         if not args.multitasking:
             # DEBUG
+            running_acc_tr = 0.0
+            running_acc_val = 0.0
             running_loss_val = []
             running_loss_tr = []
             loss_tr = np.zeros((1, 2), dtype=np.float32)
@@ -241,7 +245,8 @@ def train_model(args, net, x_train_paths, y_train_paths, x_val_paths,
 
             if not args.multitasking:
                 # loss_tr = loss_tr + net.train_on_batch(x_train_b, y_train_h_b_seg)
-                loss_value = train_on_batch(net, optimizer, loss, x_train_b, y_train_h_b_seg)
+                loss_value, acc_tr = train_on_batch(net, optimizer, loss, x_train_b, y_train_h_b_seg)
+                running_acc_tr += acc_tr
                 # Because loss is calculated as mean of batches
                 # running_loss_tr += float(loss_value) * batch_size
                 running_loss_tr.append(loss_value.numpy())
@@ -270,6 +275,7 @@ def train_model(args, net, x_train_paths, y_train_paths, x_val_paths,
         # loss_tr_float = running_loss_tr/len(x_train_paths)
         loss_tr_float = np.sum(running_loss_tr)/n_batchs_tr
         loss_tr = loss_tr/n_batchs_tr
+        acc_tr = running_acc_tr/len(x_train_paths)
 
         # Computing the number of batchs on validation
         n_batchs_val = len(x_val_paths)//batch_size
@@ -298,7 +304,8 @@ def train_model(args, net, x_train_paths, y_train_paths, x_val_paths,
 
             if not args.multitasking:
                 # loss_val = loss_val + net.test_on_batch(x_val_b, y_val_h_b_seg)
-                loss_value = test_on_batch(net, optimizer, loss, x_val_b, y_val_h_b_seg)
+                loss_value, acc_val = test_on_batch(net, optimizer, loss, x_val_b, y_val_h_b_seg)
+                running_acc_val += acc_val
                 # running_loss_val += float(loss_value) * batch_size
                 running_loss_val.append(loss_value.numpy())
             else:
@@ -318,14 +325,14 @@ def train_model(args, net, x_train_paths, y_train_paths, x_val_paths,
         # loss_val_float = running_loss_val/len(x_val_paths)
         loss_val_float = np.sum(running_loss_val)/n_batchs_val
         loss_val = loss_val/n_batchs_val
+        acc_val = running_acc_val/len(x_val_paths)
 
         if not args.multitasking:
-            # train_loss = loss_tr[0, 0]
-            train_acc = loss_tr[0, 1]
-            # val_loss = loss_val[0, 0]
-            val_acc = loss_val[0, 1]
-
             # DEBUG
+            # train_loss = loss_tr[0, 0]
+            train_acc = acc_tr
+            # val_loss = loss_val[0, 0]
+            val_acc = acc_val
             train_loss = loss_tr_float
             val_loss = loss_val_float
             print(f"Epoch: {epoch}" +
