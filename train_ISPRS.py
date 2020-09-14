@@ -88,13 +88,20 @@ def Test(model, patch_test, args):
     return predicted_class
 
 
-def compute_metrics_hw(true_labels, predicted_labels):
+def compute_metrics(true_labels, predicted_labels):
     accuracy = 100*accuracy_score(true_labels, predicted_labels)
     #avg_accuracy = 100*accuracy_score(true_labels, predicted_labels, average=None)
     f1score = 100*f1_score(true_labels, predicted_labels, average=None)
     recall = 100*recall_score(true_labels, predicted_labels, average=None)
     precision = 100*precision_score(true_labels, predicted_labels, average=None)
     return accuracy, f1score, recall, precision
+
+
+def compute_accuracy(labels, preds):
+    true_labels = np.reshape(labels, (labels.shape[0] * labels.shape[1] * labels.shape[2] * labels.shape[3]))
+    predicted_labels = np.reshape(preds, (preds.shape[0] * preds.shape[1] * preds.shape[2] * preds.shape[3]))
+    accuracy = 100 * accuracy_score(true_labels, predicted_labels)
+    return accuracy
 
 
 def add_tensorboard_scalars(train_writer, val_writer, epoch,
@@ -135,9 +142,9 @@ def train_on_batch(net, optimizer, loss, x_train_b, y_train_h_b_seg):
         print(logits.shape)
         print(y_train_h_b_seg.shape)
         with tf.device("CPU:0"):
-            res = (logits.numpy() == y_train_h_b_seg)
-            print(res.shape)
-        acc_batch = np.sum(res)
+            logits_npy = logits.numpy().copy()
+        acc_batch = compute_accuracy(y_train_h_b_seg, logits_npy)
+        print(acc_batch)
 
         # Compute the loss value for this minibatch.
         loss_value = loss(y_train_h_b_seg, logits)
