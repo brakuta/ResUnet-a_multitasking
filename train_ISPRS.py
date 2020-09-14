@@ -257,8 +257,6 @@ def train_model(args, net, x_train_paths, y_train_paths, x_val_paths,
         # print(loss_tr_debg)
         # loss_tr_float = running_loss_tr/len(x_train_paths)
         loss_tr_float = np.sum(running_loss_tr)/n_batchs_tr
-        print('[DEBUG LOSS]')
-        print(running_loss_tr)
         loss_tr = loss_tr/n_batchs_tr
 
         # Computing the number of batchs on validation
@@ -571,7 +569,7 @@ if __name__ == '__main__':
         model = unet((rows, cols, channels), number_class)
         model.summary()
 
-        model.compile(optimizer=adam, loss=loss, metrics=['accuracy'])
+        # model.compile(optimizer=adam, loss=loss, metrics=['accuracy'])
 
     filepath = './models/'
 
