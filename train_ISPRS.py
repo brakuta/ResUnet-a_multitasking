@@ -138,6 +138,7 @@ def train_model(args, net, x_train_paths, y_train_paths, x_val_paths,
     x_val_b = np.zeros(x_shape_batch, dtype=np.float32)
     y_val_h_b_seg = np.zeros(y_shape_batch, dtype=np.float32)
 
+
     if args.multitasking:
         # Bounds
         if args.bound:
@@ -161,8 +162,8 @@ def train_model(args, net, x_train_paths, y_train_paths, x_val_paths,
     for epoch in range(epochs):
         if not args.multitasking:
             # DEBUG
-            running_loss_val = 0
-            running_loss_tr = 0
+            running_loss_val = []
+            running_loss_tr = []
             loss_tr = np.zeros((1, 2), dtype=np.float32)
             loss_val = np.zeros((1, 2), dtype=np.float32)
         else:
@@ -215,10 +216,10 @@ def train_model(args, net, x_train_paths, y_train_paths, x_val_paths,
 
                     # Compute the loss value for this minibatch.
                     loss_value = loss(y_train_h_b_seg, logits)
-                    # print(type(loss_value))
-                    # print(loss_value.shape)
-                    # print(loss_value)
-                    # print(float(loss_value))
+                    print(type(loss_value))
+                    print(loss_value.shape)
+                    print(loss_value)
+                    print(float(loss_value))
 
                 # Use the gradient tape to automatically retrieve
                 # the gradients of the trainable
@@ -230,7 +231,8 @@ def train_model(args, net, x_train_paths, y_train_paths, x_val_paths,
                 optimizer.apply_gradients(zip(grads, model.trainable_weights))
 
                 # Because loss is calculated as mean of batches
-                running_loss_tr += float(loss_value) * batch_size
+                # running_loss_tr += float(loss_value) * batch_size
+                running_loss_tr.append(loss_value.numpy())
                 #print(running_loss_tr)
 
             else:
@@ -253,7 +255,8 @@ def train_model(args, net, x_train_paths, y_train_paths, x_val_paths,
 
         # Training loss; Divide by the number of batches
         # print(loss_tr_debg)
-        loss_tr_float = running_loss_tr/len(x_train_paths)
+        # loss_tr_float = running_loss_tr/len(x_train_paths)
+        loss_tr_float = np.sum(running_loss_tr)/n_batchs_tr
         print('[DEBUG LOSS]')
         print(running_loss_tr)
         loss_tr = loss_tr/n_batchs_tr
@@ -289,7 +292,8 @@ def train_model(args, net, x_train_paths, y_train_paths, x_val_paths,
                 # print(f'Val logits: {val_logits.shape}')
                 # print(type(val_logits))
                 loss_value = loss(y_val_h_b_seg, val_logits)
-                running_loss_val += float(loss_value) * batch_size
+                # running_loss_val += float(loss_value) * batch_size
+                running_loss_val.append(loss_value.numpy())
             else:
                 # Dict template: y_val_b = {"segmentation": y_val_h_b_seg,
                 # "boundary": y_val_h_b_bound, "distance":  y_val_h_b_dist,
@@ -304,7 +308,8 @@ def train_model(args, net, x_train_paths, y_train_paths, x_val_paths,
 
                 loss_val = loss_val + net.test_on_batch(x=x_val_b, y=y_val_b)
 
-        loss_val_float = running_loss_val/len(x_val_paths)
+        # loss_val_float = running_loss_val/len(x_val_paths)
+        loss_val_float = np.sum(running_loss_val)/n_batchs_val
         loss_val = loss_val/n_batchs_val
 
         if not args.multitasking:
