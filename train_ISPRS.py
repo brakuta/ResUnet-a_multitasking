@@ -166,7 +166,7 @@ def train_on_batch(net, optimizer, loss, x_train_b, y_train_h_b_seg):
 
     # Run one step of gradient descent by updating
     # the value of the variables to minimize the loss.
-    optimizer.apply_gradients(zip(grads, model.trainable_weights))
+    optimizer.apply_gradients(zip(grads, net.trainable_weights))
     return loss_value, acc_batch
 
 
