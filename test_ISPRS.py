@@ -227,6 +227,16 @@ def binarize_matrix(img_train_ref, label_dict):
 
     return binary_img_train_ref
 
+def create_bound_labels(patches_test_ref, num_classes):
+    shape = patches_test.shape
+    bounds_ref_h = np.full((shape[0], shape[1], shape[2], num_classes), -1)
+    for i in range(len(patches_test)):
+        img_ref = patches_test_ref[i]
+        img_ref_h = tf.keras.utils.to_categorical(img_ref, num_classes)
+        bounds_ref_h[i] = get_boundary_label(img_ref_h)
+    return bounds_ref_h
+
+
 
 gpu_devices = tf.config.experimental.list_physical_devices('GPU')
 tf.config.experimental.set_memory_growth(gpu_devices[0], True)
@@ -300,13 +310,22 @@ print('[TEST]')
 
 if args.multitasking:
     seg_preds = patches_pred[0]
+    bound_preds = patches_pred[1]
     print(f'seg shape argmax: {seg_preds.shape}')
     seg_pred = np.argmax(seg_preds, axis=-1)
     print(f'seg shape argmax: {seg_pred.shape}')
+    bound_preds_argmax = np.argmax(bound_preds, axis=-1)
+    bound_preds_max = np.max(bound_preds, axis=-1)
+    bound_preds_max[bound_preds_argmax == 0] = 1
+    bound_preds_max[bound_preds_argmax == 1] = 2
+    bound_preds_max[bound_preds_argmax == 2] = 3
+    bound_preds_max[bound_preds_argmax == 3] = 4
+    bound_preds_max[bound_preds_max < 1] = 0
+    bound_preds = bound_preds_max
 else:
     seg_pred = patches_pred
 
-# Metrics
+# Flatten tensors
 true_labels = np.reshape(patches_test_ref, (patches_test_ref.shape[0] *
                                             patches_test_ref.shape[1] *
                                             patches_test_ref.shape[2]))
@@ -317,9 +336,9 @@ predicted_labels = np.reshape(seg_pred, (seg_pred.shape[0] *
 
 # Metrics
 metrics = compute_metrics(true_labels, predicted_labels)
-confusion_matrix = confusion_matrix(true_labels, predicted_labels)
+conf_matrix = confusion_matrix(true_labels, predicted_labels)
 
-print('Confusion  matrix \n', confusion_matrix)
+print('Confusion  matrix \n', conf_matrix)
 print()
 print('Accuracy: ', metrics[0])
 print('F1score: ', metrics[1])
@@ -327,15 +346,63 @@ print('Recall: ', metrics[2])
 print('Precision: ', metrics[3])
 
 # Reconstruct entire image segmentation predction
-img_reconstructed = pred_recostruction(args.patch_size, seg_pred,
-                                       binary_img_test_ref, img_type=1)
-img_reconstructed_rgb = convert_preds2rgb(img_reconstructed,
-                                          label_dict)
-plt.imsave(os.path.join(args.output_path, 'pred_seg_reconstructed.jpeg'),
-           img_reconstructed_rgb)
+# img_reconstructed = pred_recostruction(args.patch_size, seg_pred,
+#                                        binary_img_test_ref, img_type=1)
+# img_reconstructed_rgb = convert_preds2rgb(img_reconstructed,
+#                                           label_dict)
+# plt.imsave(os.path.join(args.output_path, 'pred_seg_reconstructed.jpeg'),
+#            img_reconstructed_rgb)
 
-if args.multitasking:
+# Reconstruct entire image boundary predction
+img_reconstructed = pred_recostruction(args.patch_size, bound_preds,
+                                       binary_img_test_ref, img_type=1)
+bound_labels = create_bound_labels(patches_test_ref, args.num_classes)
+bound_labels = np.argmax(bound_labels, axis=-1)
+
+# bound_preds_argmax = np.argmax(bound_preds, axis=-1)
+# bound_preds_max = np.max(bound_preds, axis=-1)
+# bound_preds_max[bound_preds_argmax == 0] = 1
+# bound_preds_max[bound_preds_argmax == 1] = 2
+# bound_preds_max[bound_preds_argmax == 2] = 3
+# bound_preds_max[bound_preds_argmax == 3] = 4
+# bound_preds_max[bound_preds_max < 1] = 0
+
+bound_label_reconstructed = pred_recostruction(args.patch_size, bound_labels,
+                                               binary_img_test_ref, img_type=1)
+
+# Metrics
+true_labels = np.reshape(bound_labels, (bound_labels.shape[0] *
+                                            bound_labels.shape[1] *
+                                            bound_labels.shape[2]))
+
+predicted_labels = np.reshape(bound_preds, (bound_preds.shape[0] *
+                                         bound_preds.shape[1] *
+                                         bound_preds.shape[2]))
+
+# Metrics
+metrics = compute_metrics(true_labels, predicted_labels)
+conf_matrix = confusion_matrix(true_labels, predicted_labels)
+
+print('Confusion  matrix \n', conf_matrix)
+print()
+print('Accuracy: ', metrics[0])
+print('F1score: ', metrics[1])
+print('Recall: ', metrics[2])
+print('Precision: ', metrics[3])
+
+from skimage import color
+# img_reconstructed = color.rgb2gray(img_reconstructed)
+plt.imshow(img_reconstructed)
+plt.show()
+print(bound_label_reconstructed.shape)
+plt.imshow(bound_label_reconstructed)
+plt.show()
+
+if 1 == 0:
+# if args.multitasking:
     # Visualize inference per class
+    bounds_ref_h = []
+    bounds_preds = []
     for i in range(len(patches_test)):
         # Plot predictions for each class and each task; Each row corresponds to a
         # class and has its predictions of each task
@@ -381,7 +448,7 @@ if args.multitasking:
         # As long as the normalization process was just img = img / 255
         hsv_patch = patches_pred[task][i]
         # print(f'HSV max {i}: {hsv_patch.max()}, HSV min: {hsv_patch.min()}')
-        hsv_patch = (hsv_patch * 255).astype(np.uint8)
+        hsv_patch = (hsv_patch * np.array([179, 255, 255])).astype(np.uint8)
         rgb_patch = cv2.cvtColor(hsv_patch, cv2.COLOR_HSV2RGB)
         ax2.imshow(rgb_patch)
         ax3.set_title('Difference between both')
@@ -400,10 +467,15 @@ if args.multitasking:
         axes[0, 4].set_title('Bound Pred')
         axes[0, 5].set_title('Dist Ref')
         axes[0, 6].set_title('Dist Pred')
-        plt.savefig(os.path.join(args.output_path, f'pred{i}_classes.jpg'))
-        plt.savefig(os.path.join(args.output_path, f'pred{i}_color.jpg'))
-        plt.show()
-        plt.close()
+        # plt.savefig(os.path.join(args.output_path, f'pred{i}_classes.jpg'))
+        # plt.savefig(os.path.join(args.output_path, f'pred{i}_color.jpg'))
+        # plt.show()
+        # plt.close()
+        bounds_ref_h.append(bound_ref_h)
+        bounds_preds.append(patches_pred[1])
+
+# img_reconstructed = pred_recostruction(args.patch_size, bounds_preds,
+#                                        bounds_ref_h, img_type=1)
 
 
 
